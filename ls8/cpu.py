@@ -16,6 +16,7 @@ class CPU:
         self.HLT = 0b00000001
         self.PRN = 0b01000111
         self.LDI = 0b10000010
+        self.MUL = 0b10100010
 
     def ram_read(self, MAR):
         value = self.ram[MAR]
@@ -31,27 +32,51 @@ class CPU:
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
+        #
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        if len(sys.argv) != 2:
+            print("usage: ls8.py filename")
+            sys.exit(1)
+
+        prog = sys.argv[1]
+
+        with open(prog) as f:
+            for line in f:
+                # print(line)
+                line = line.split("#")[0]
+                # print(f" first exe {line}")
+                line = line.strip() # lose whitespace
+                # print(f" second exe {line}")
+
+                if line == "":
+                    continue
+
+                val = int(line, 2) # LS-8 uses base 2!
+                # print(val)
+
+                self.ram[address] = val
+                address +=1
 
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+
+        elif op == self.MUL:
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -88,6 +113,7 @@ class CPU:
                 register_index = operand_a
                 self.reg[register_index] = operand_b
                 self.pc += 3
+                print("pass")
             # elif IR == OPCODES.NOP.code:
             #     self.pc += 1
             elif IR == self.PRN:
@@ -98,9 +124,16 @@ class CPU:
                 value = int(self.reg[reg_index])
                 print(f'{value}')
                 self.pc += 2
+
             elif IR == self.HLT:
                 halted = True
                 self.pc += 1
+
+
+            elif IR == self.MUL:
+                self.alu(self.MUL, operand_a, operand_b)
+                self.pc += 3
+
             else:
                 print(f'Unknown instruction at index {self.pc}')
                 self.pc += 1
