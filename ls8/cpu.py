@@ -13,15 +13,9 @@ class CPU:
         self.pc = 0
         self.reg = [0] * 8
         self.fl = 0
-        self.operations = {
-            "LDI": 0b10000010,
-            "HLT": 0b00000001,
-            "PRN": 0b01000111,
-            "ADD": 0b10100000,
-            "MUL": 0b10100010,
-            "PUSH": 0b01000101,
-            "POP": 0b01000110,
-         }
+        self.HLT = 0b00000001
+        self.PRN = 0b01000111
+        self.LDI = 0b10000010
 
     def ram_read(self, MAR):
         value = self.ram[MAR]
@@ -84,23 +78,29 @@ class CPU:
     def run(self):
         """Run the CPU."""
         halted = False
-
         while not halted:
             IR = self.ram[self.pc]
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-        if IR == self.operations["LDI"]:
-            self.reg[operand_a] = operand_b
-            self.pc += 3
-
-        elif IR == self.operations["PRN"]:
-            print(self.reg[operand_a])
-            self.pc += 2
-
-        elif IR == self.operations["HLT"]:
-            halted = True
-
-        else:
-            print(f"Unknown instruction at index {self.pc}")
-            sys.exit(1)
+            if IR == self.LDI:
+                # Set the value of a register to an integer.
+                register_index = operand_a
+                self.reg[register_index] = operand_b
+                self.pc += 3
+            # elif IR == OPCODES.NOP.code:
+            #     self.pc += 1
+            elif IR == self.PRN:
+                # Print numeric value stored in the given register.
+                # Print to the console the decimal integer value that is stored in the given
+                # register.
+                reg_index = operand_a
+                value = int(self.reg[reg_index])
+                print(f'{value}')
+                self.pc += 2
+            elif IR == self.HLT:
+                halted = True
+                self.pc += 1
+            else:
+                print(f'Unknown instruction at index {self.pc}')
+                self.pc += 1
