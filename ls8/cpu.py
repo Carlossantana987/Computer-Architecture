@@ -54,17 +54,17 @@ class CPU:
 
         with open(prog) as f:
             for line in f:
-                # print(line)
+                print(line)
                 line = line.split("#")[0]
-                # print(f" first exe {line}")
+                print(f" first exe {line}")
                 line = line.strip() # lose whitespace
-                # print(f" second exe {line}")
+                print(f" second exe {line}")
 
                 if line == "":
                     continue
 
                 val = int(line, 2) # LS-8 uses base 2!
-                # print(val)
+                print(val)
 
                 self.ram[address] = val
                 address +=1
