@@ -17,6 +17,10 @@ class CPU:
         self.PRN = 0b01000111
         self.LDI = 0b10000010
         self.MUL = 0b10100010
+        self.POP = 0b01000110
+        self.PUSH= 0b01000101
+        self.sp = 0xf4
+
 
     def ram_read(self, MAR):
         value = self.ram[MAR]
@@ -54,17 +58,17 @@ class CPU:
 
         with open(prog) as f:
             for line in f:
-                print(line)
+                # print(line)
                 line = line.split("#")[0]
-                print(f" first exe {line}")
+                # print(f" first exe {line}")
                 line = line.strip() # lose whitespace
-                print(f" second exe {line}")
+                # print(f" second exe {line}")
 
                 if line == "":
                     continue
 
                 val = int(line, 2) # LS-8 uses base 2!
-                print(val)
+                # print(val)
 
                 self.ram[address] = val
                 address +=1
@@ -103,6 +107,7 @@ class CPU:
     def run(self):
         """Run the CPU."""
         halted = False
+
         while not halted:
             IR = self.ram[self.pc]
             operand_a = self.ram_read(self.pc + 1)
@@ -113,7 +118,7 @@ class CPU:
                 register_index = operand_a
                 self.reg[register_index] = operand_b
                 self.pc += 3
-                print("pass")
+                # print("pass")
             # elif IR == OPCODES.NOP.code:
             #     self.pc += 1
             elif IR == self.PRN:
@@ -133,6 +138,16 @@ class CPU:
             elif IR == self.MUL:
                 self.alu(self.MUL, operand_a, operand_b)
                 self.pc += 3
+
+            elif IR == self.POP:
+                self.reg[operand_a] = self.ram[self.sp]
+                self.sp = (self.sp + 1)
+                self.pc += 2
+
+            elif IR == self.PUSH:
+                self.sp = (self.sp - 1)
+                self.ram[self.sp] = self.reg[operand_a]
+                self.pc += 2
 
             else:
                 print(f'Unknown instruction at index {self.pc}')
